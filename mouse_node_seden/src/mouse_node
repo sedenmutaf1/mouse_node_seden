@@ -1,0 +1,37 @@
+#include "ros/ros.h"
+#include "std_msgs/String.h"
+#include <fstream>
+
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "mouse_node_seden");
+    ros::NodeHandle nh;
+
+    ros::Publisher mouse_pub = nh.advertise<std_msgs::String>("/mouse_node", 10);
+
+    
+    std::ifstream mouse_input("/dev/input/mouse0");
+
+    if (!mouse_input.is_open()) {
+        ROS_ERROR("Unable to open /dev/input/mouse0");
+        return 1;
+    }
+
+    
+    while (ros::ok()) {
+        std::string mouse_data;
+        getline(mouse_input, mouse_data);
+
+        std_msgs::String msg;
+        msg.data = mouse_data;
+
+        mouse_pub.publish(msg);
+
+        ros::spinOnce();
+        ros::Duration(0.1).sleep(); 
+    }
+
+    mouse_input.close();
+
+    return 0;
+}
